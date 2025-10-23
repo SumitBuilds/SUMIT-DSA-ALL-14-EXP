@@ -1,0 +1,141 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Max length for a song title
+#define MAX_TITLE_LEN 50
+
+// Node structure for the Linked List Stack
+struct Node {
+    char title[MAX_TITLE_LEN];
+    struct Node *next;
+};
+
+// Stack pointer: 'top' is the head of the list
+struct Node *top = NULL; 
+
+// Function to push a new song onto the stack (at the top/head)
+void push(const char *songTitle) {
+    // 1. Create a new node and allocate memory
+    struct Node *newNode = (struct Node *)malloc(sizeof(struct Node));
+    if (newNode == NULL) {
+        printf("Memory Overflow! Cannot add to history.\n");
+        return;
+    }
+    
+    // 2. Assign the song title and link the node
+    strncpy(newNode->title, songTitle, MAX_TITLE_LEN);
+    
+    // 3. New node's next points to the current top
+    newNode->next = top;
+    
+    // 4. Update top to the new node
+    top = newNode;
+
+    printf("\n[Played] '%s'. Added to history.\n", songTitle);
+}
+
+// Function to pop the last played song (from the top/head)
+void pop() {
+    // 1. Check for underflow (empty stack)
+    if (top == NULL) {
+        printf("\nHistory is empty! Nothing to go back to.\n");
+        return;
+    }
+    
+    // 2. Define a temporary pointer to the top node
+    struct Node *temp = top;
+    
+    // 3. Display the song being 'popped' (going back to)
+    printf("\n[Going Back To] '%s'...\n", temp->title);
+    
+    // 4. Move top pointer to the next node
+    top = top->next;
+
+    // 5. Free the memory of the popped node
+    free(temp);
+}
+
+// Function to peek/view the last played song (at the top)
+void peek() {
+    if (top == NULL) {
+        printf("\nHistory is empty. No current song in view.\n");
+        return;
+    }
+    printf("\n[Last Song Played (Current)] '%s'\n", top->title);
+}
+
+// Function to display the entire history stack
+void display() {
+    if (top == NULL) {
+        printf("\nPlaylist history is empty.\n");
+        return;
+    }
+    
+    printf("\n--- Playlist History (LIFO) ---\n");
+    struct Node *temp = top;
+    int count = 1;
+    // Traverse through the list from the top
+    while (temp != NULL) {
+        printf("%d. %s\n", count++, temp->title);
+        temp = temp->next;
+    }
+    printf("-------------------------------\n");
+}
+
+int main() {
+    int choice;
+    char song_input[MAX_TITLE_LEN];
+    int c; // Declared to safely clear the input buffer
+
+    do {
+        printf("\n--- Music Player History (Stack) ---\n");
+        printf("1. Play New Song (Push)\n");
+        printf("2. Go Back to Previous Song (Pop)\n");
+        printf("3. Show Last Song Played (Peek)\n");
+        printf("4. View History\n");
+        printf("5. Exit\n");
+        printf("Enter your choice: ");
+        
+        // Use scanf for integer choice
+        if (scanf("%d", &choice) != 1) {
+            choice = 0; // Invalidates choice on bad input
+        }
+        
+        // Clear input buffer for subsequent safe reading
+        while ((c = getchar()) != '\n' && c != EOF) {}
+
+        switch (choice) {
+            case 1:
+                printf("Enter song title being played now: ");
+                // Use fgets for safe string reading
+                if (fgets(song_input, MAX_TITLE_LEN, stdin) != NULL) {
+                    // Remove the trailing newline character added by fgets
+                    song_input[strcspn(song_input, "\n")] = 0; 
+                    push(song_input);
+                }
+                break;
+            case 2:
+                pop();
+                break;
+            case 3:
+                peek();
+                break;
+            case 4:
+                display();
+                break;
+            case 5:
+                printf("Exiting History Tracker.\n");
+                break;
+            default:
+                printf("Invalid choice! Please try again.\n");
+        }
+    } while (choice != 5);
+
+    // Final pause logic to keep the terminal open
+    printf("\n\n*** Program Finished. Press ENTER to close the terminal. ***");
+    while ((c = getchar()) != '\n' && c != EOF) {} // Clear buffer again
+    getchar(); 
+    
+    return 0;
+}
