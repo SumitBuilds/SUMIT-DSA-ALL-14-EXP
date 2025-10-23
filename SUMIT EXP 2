@@ -1,0 +1,93 @@
+#include <stdio.h>
+#include <ctype.h>  // for isalnum()
+#include <string.h> // <--- ADD THIS LINE
+#define MAX 100
+
+char stack[MAX];
+int top = -1;
+
+// Function to push elements to stack
+void push(char c) {
+    if (top == MAX - 1)
+        printf("Stack Overflow\n");
+    else
+        stack[++top] = c;
+}
+
+// Function to pop elements from stack
+char pop() {
+    if (top == -1)
+        return -1;
+    else
+        return stack[top--];
+}
+
+// Function to check precedence of operators
+int precedence(char c) {
+    if (c == '^')
+        return 3;
+    else if (c == '*' || c == '/')
+        return 2;
+    else if (c == '+' || c == '-')
+        return 1;
+    else
+        return 0;
+}
+
+// Function to convert infix to postfix
+void infixToPostfix(char *exp) {
+    char *e, x;
+    e = exp;
+    printf("Postfix Expression: ");
+    while (*e != '\0') {
+        if (isalnum(*e))  // operand (A, B, 1, etc.)
+            printf("%c", *e);
+        else if (*e == '(')
+            push(*e);
+        else if (*e == ')') {
+            // Pop until '(' is encountered
+            while ((x = pop()) != '(')
+                printf("%c", x);
+        } else {  // operator
+            // Pop operators with higher or equal precedence
+            while (top != -1 && precedence(stack[top]) >= precedence(*e))
+                printf("%c", pop());
+            push(*e);
+        }
+        e++;
+    }
+
+    // Pop remaining operators
+    while (top != -1)
+        printf("%c", pop());
+
+    printf("\n");
+}
+
+int main() {
+    char exp[MAX];
+    printf("Enter Infix Expression: ");
+    
+    // Use fgets instead of scanf for safer string reading.
+    if (fgets(exp, MAX, stdin) == NULL) {
+        return 1; // Handle error
+    }
+    
+    // Remove the trailing newline character that fgets adds
+    exp[strcspn(exp, "\n")] = 0; 
+
+    infixToPostfix(exp);
+    
+    // --- FINAL FIX FOR PAUSING THE TERMINAL ---
+    printf("\n\n*** Press ENTER to exit... ***");
+    
+    // Clear any leftover characters from the input buffer
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF) {}
+    
+    // Wait for the user's final keypress
+    getchar();
+    // ------------------------------------------
+    
+    return 0;
+}
