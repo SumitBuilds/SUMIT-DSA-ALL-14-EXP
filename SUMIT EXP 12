@@ -1,0 +1,139 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_SONGS 100
+#define MAX_SONG_LENGTH 50
+
+// Global array to store the playlist (array of strings)
+char playlist[MAX_SONGS][MAX_SONG_LENGTH];
+int num_songs = 0;
+
+// --- Binary Search Implementation ---
+
+// Returns the index of the key if found, otherwise returns -1.
+int binarySearch(const char key[]) {
+    int low = 0;
+    int high = num_songs - 1;
+    
+    while (low <= high) {
+        int mid = low + (high - low) / 2; // Safer way to calculate mid to prevent overflow
+        
+        // Use strcmp to compare strings
+        int cmp = strcmp(key, playlist[mid]);
+        
+        if (cmp == 0) {
+            // Key found
+            return mid;
+        } else if (cmp < 0) {
+            // Key is alphabetically before playlist[mid], search left half
+            high = mid - 1;
+        } else {
+            // Key is alphabetically after playlist[mid], search right half
+            low = mid + 1;
+        }
+    }
+    
+    // Key not found
+    return -1;
+}
+
+// --- Menu Functions ---
+
+void setupPlaylist() {
+    int i, c;
+    
+    printf("Enter number of songs (max %d): ", MAX_SONGS);
+    if (scanf("%d", &num_songs) != 1) num_songs = 0;
+    while ((c = getchar()) != '\n' && c != EOF) {}
+    
+    if (num_songs <= 0 || num_songs > MAX_SONGS) {
+        printf("Invalid number. Resetting playlist.\n");
+        num_songs = 0;
+        return;
+    }
+    
+    printf("Enter songs in alphabetical order (one per line):\n");
+    for (i = 0; i < num_songs; i++) {
+        printf("Song %d: ", i + 1);
+        
+        // Read the string (song name)
+        if (fgets(playlist[i], MAX_SONG_LENGTH, stdin) == NULL) {
+            printf("Error reading input.\n");
+            break;
+        }
+        // Remove the trailing newline character added by fgets
+        size_t len = strlen(playlist[i]);
+        if (len > 0 && playlist[i][len - 1] == '\n') {
+            playlist[i][len - 1] = '\0';
+        }
+    }
+    printf("Playlist setup complete.\n");
+}
+
+void performSearch() {
+    if (num_songs == 0) {
+        printf("Playlist is empty. Please set up the playlist first (Option 1).\n");
+        return;
+    }
+    
+    char search_key[MAX_SONG_LENGTH];
+    int c;
+    
+    printf("Enter song to search: ");
+    if (fgets(search_key, MAX_SONG_LENGTH, stdin) == NULL) return;
+    
+    // Remove the trailing newline character
+    size_t len = strlen(search_key);
+    if (len > 0 && search_key[len - 1] == '\n') {
+        search_key[len - 1] = '\0';
+    }
+
+    int result_index = binarySearch(search_key);
+    
+    if (result_index != -1) {
+        printf("Song '%s' found at position %d (index %d) in playlist.\n", search_key, result_index + 1, result_index);
+    } else {
+        printf("Song '%s' not found in playlist.\n", search_key);
+    }
+}
+
+
+int main() {
+    int choice, c;
+    
+    // Optional: Setup a default playlist for quick testing
+    // strcpy(playlist[0], "Closer");
+    // strcpy(playlist[1], "Despacito");
+    // strcpy(playlist[2], "Perfect");
+    // num_songs = 3;
+
+    do {
+        printf("\n--- Playlist Search Menu (Binary Search) ---\n");
+        printf("1. Setup/Update Playlist\n2. Search for a Song\n3. Exit\n");
+        printf("Enter your choice: ");
+        
+        if (scanf("%d", &choice) != 1) choice = 0;
+        while ((c = getchar()) != '\n' && c != EOF) {} // Clear buffer
+
+        switch (choice) {
+            case 1:
+                setupPlaylist();
+                break;
+            case 2:
+                performSearch();
+                break;
+            case 3:
+                printf("Exiting program.\n");
+                break;
+            default:
+                printf("Invalid choice.\n");
+        }
+    } while (choice != 3);
+
+    // Terminal pause logic
+    printf("\n\n*** Program Finished. Press ENTER to close the terminal. ***");
+    while ((c = getchar()) != '\n' && c != EOF) {}
+    getchar();
+    return 0;
+}
