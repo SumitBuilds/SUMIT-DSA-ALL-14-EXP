@@ -1,0 +1,177 @@
+#include <stdio.h>
+
+#define MAX 20
+
+int arr[MAX]; // Array to store the elements
+int original_arr[MAX]; // Array to store the original elements for reuse
+int n = 0; // Number of elements
+
+// --- Helper Functions ---
+
+// Function to read the elements from the user
+void readElements() {
+    int i, c;
+    
+    printf("Enter number of elements (max %d): ", MAX);
+    if (scanf("%d", &n) != 1) n = 0;
+    while ((c = getchar()) != '\n' && c != EOF) {}
+    
+    if (n <= 0 || n > MAX) {
+        printf("Invalid number of elements. Setting count to 0.\n");
+        n = 0;
+        return;
+    }
+    
+    printf("Enter elements:\n");
+    for (i = 0; i < n; i++) {
+        if (scanf("%d", &original_arr[i]) != 1) {
+            printf("Invalid input. Stopping input.\n");
+            n = i;
+            break;
+        }
+    }
+    while ((c = getchar()) != '\n' && c != EOF) {}
+}
+
+// Function to copy the original array into the working array
+void setupArray() {
+    for (int i = 0; i < n; i++) {
+        arr[i] = original_arr[i];
+    }
+}
+
+// Function to display the array
+void display(const char *sortName) {
+    if (n == 0) {
+        printf("Array is empty.\n");
+        return;
+    }
+    
+    printf("Sorted Array (%s): ", sortName);
+    for (int i = 0; i < n; i++) {
+        printf("%d ", arr[i]);
+    }
+    printf("\n");
+}
+
+// Function to swap two numbers
+void swap(int *a, int *b) {
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+// --- Sorting Algorithms ---
+
+// 1. Selection Sort
+void selectionSort() {
+    int i, j, min_idx;
+    
+    setupArray();
+
+    // One by one move boundary of unsorted subarray
+    for (i = 0; i < n - 1; i++) {
+        // Find the minimum element in unsorted array
+        min_idx = i;
+        for (j = i + 1; j < n; j++) {
+            if (arr[j] < arr[min_idx])
+                min_idx = j;
+        }
+        
+        // Swap the found minimum element with the first element
+        swap(&arr[min_idx], &arr[i]);
+    }
+    display("Selection Sort");
+}
+
+// 2. Bubble Sort
+void bubbleSort() {
+    int i, j;
+    int swapped;
+    
+    setupArray();
+    
+    // Loop through all array elements
+    for (i = 0; i < n - 1; i++) {
+        swapped = 0;
+        // Last i elements are already in place
+        for (j = 0; j < n - i - 1; j++) {
+            // Swap if the element found is greater than the next element
+            if (arr[j] > arr[j + 1]) {
+                swap(&arr[j], &arr[j + 1]);
+                swapped = 1;
+            }
+        }
+        // OPTIMIZATION: If no two elements were swapped by inner loop, then break
+        if (swapped == 0) break;
+    }
+    display("Bubble Sort");
+}
+
+// 3. Insertion Sort
+void insertionSort() {
+    int i, key, j;
+    
+    setupArray();
+
+    // Start from the second element (index 1)
+    for (i = 1; i < n; i++) {
+        key = arr[i];
+        j = i - 1;
+        
+        // Move elements of arr[0..i-1], that are greater than key, 
+        // to one position ahead of their current position
+        while (j >= 0 && arr[j] > key) {
+            arr[j + 1] = arr[j];
+            j = j - 1;
+        }
+        arr[j + 1] = key;
+    }
+    display("Insertion Sort");
+}
+
+
+int main() {
+    int choice, c;
+    
+    // Initial read of elements
+    readElements(); 
+
+    do {
+        printf("\n--- Menu ---\n");
+        printf("1. Selection Sort\n2. Bubble Sort\n3. Insertion Sort\n4. Exit\n");
+        printf("Enter your choice: ");
+        
+        if (scanf("%d", &choice) != 1) choice = 0;
+        while ((c = getchar()) != '\n' && c != EOF) {}
+
+        if (n == 0 && choice != 4) {
+            printf("Error: Array is empty. Please restart or initialize a non-empty array.\n");
+            choice = 0;
+            continue;
+        }
+
+        switch (choice) {
+            case 1:
+                selectionSort();
+                break;
+            case 2:
+                bubbleSort();
+                break;
+            case 3:
+                insertionSort();
+                break;
+            case 4:
+                printf("Exiting program.\n");
+                break;
+            default:
+                printf("Invalid choice.\n");
+        }
+    } while (choice != 4);
+
+    // Terminal pause logic
+    printf("\n\n*** Program Finished. Press ENTER to close the terminal. ***");
+    while ((c = getchar()) != '\n' && c != EOF) {}
+    getchar();
+    return 0;
+}
