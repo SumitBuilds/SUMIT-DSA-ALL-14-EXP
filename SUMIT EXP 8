@@ -1,0 +1,192 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+struct node {
+    int data;
+    struct node *prev; // Pointer to the previous node
+    struct node *next; // Pointer to the next node
+};
+
+// Use 'head' pointer. In a circular list, 'head->prev' is the last node.
+struct node *head = NULL; 
+
+// Helper function for memory allocation
+struct node* createNode(int data) {
+    struct node* newNode = (struct node*)malloc(sizeof(struct node));
+    if (newNode == NULL) {
+        printf("Memory allocation failed!\n");
+        return NULL;
+    }
+    newNode->data = data;
+    return newNode;
+}
+
+// 1. Insert at Beginning (New Head)
+void insertAtBeginning(int data) {
+    struct node* newNode = createNode(data);
+    if (newNode == NULL) return;
+
+    if (head == NULL) {
+        head = newNode;
+        head->next = head;
+        head->prev = head;
+    } else {
+        struct node* last = head->prev;
+        
+        newNode->next = head;
+        newNode->prev = last;
+        head->prev = newNode;
+        last->next = newNode;
+        head = newNode; // New node becomes the new head
+    }
+    printf("Inserted %d at the beginning.\n", data);
+}
+
+// 2. Insert at End (New Last Node)
+void insertAtEnd(int data) {
+    struct node* newNode = createNode(data);
+    if (newNode == NULL) return;
+
+    if (head == NULL) {
+        head = newNode;
+        head->next = head;
+        head->prev = head;
+    } else {
+        struct node* last = head->prev;
+        
+        newNode->next = head;
+        newNode->prev = last;
+        head->prev = newNode;
+        last->next = newNode; // New node is linked after the current last
+        // The 'head' pointer does not change
+    }
+    printf("Inserted %d at the end.\n", data);
+}
+
+// 3. Delete a Node by Value (Key)
+void deleteNodeByKey(int key) {
+    if (head == NULL) {
+        printf("List is Empty. Cannot delete.\n");
+        return;
+    }
+
+    struct node *current = head;
+    
+    // Traverse the list to find the node with the key
+    do {
+        if (current->data == key) break;
+        current = current->next;
+    } while (current != head);
+
+    // Node not found
+    if (current->data != key && current == head) {
+        printf("Node with value %d not found.\n", key);
+        return;
+    }
+    
+    // Deleting the single node in the list
+    if (current == head && current->next == head) {
+        free(current);
+        head = NULL;
+        printf("Deleted %d. List is now empty.\n", key);
+        return;
+    }
+
+    // Adjust pointers for deletion
+    current->prev->next = current->next;
+    current->next->prev = current->prev;
+
+    // If deleting the head, update the head pointer
+    if (current == head) {
+        head = current->next;
+    }
+
+    printf("Deleted node with value %d.\n", key);
+    free(current);
+}
+
+// 4. Display Forward
+void displayForward() {
+    if (head == NULL) {
+        printf("\nList is Empty.\n");
+        return;
+    }
+    
+    struct node* current = head;
+    printf("\nForward: ");
+    do {
+        printf("%d <-> ", current->data);
+        current = current->next;
+    } while (current != head);
+    printf("(back to head)\n");
+}
+
+// 5. Display Backward
+void displayBackward() {
+    if (head == NULL) {
+        printf("\nList is Empty.\n");
+        return;
+    }
+    
+    // Start from the last node (head->prev)
+    struct node* current = head->prev; 
+    printf("\nBackward: ");
+    
+    do {
+        printf("%d <-> ", current->data);
+        current = current->prev;
+    } while (current != head->prev); // Loop until back to the start node
+    printf("(back to head)\n");
+}
+
+int main() {
+    int choice, value, c, key;
+    
+    do {
+        printf("\n--- Circular Doubly Linked List Menu ---\n");
+        printf("1. Insert at Beginning\n2. Insert at End\n3. Delete a Node\n4. Display Forward\n5. Display Backward\n6. Exit\n");
+        printf("Enter your choice: ");
+        
+        // Input handling with buffer clear
+        if (scanf("%d", &choice) != 1) choice = 0;
+        while ((c = getchar()) != '\n' && c != EOF) {}
+
+        switch (choice) {
+            case 1:
+                printf("Enter value: ");
+                scanf("%d", &value);
+                while ((c = getchar()) != '\n' && c != EOF) {}
+                insertAtBeginning(value);
+                break;
+            case 2:
+                printf("Enter value: ");
+                scanf("%d", &value);
+                while ((c = getchar()) != '\n' && c != EOF) {}
+                insertAtEnd(value);
+                break;
+            case 3:
+                printf("Enter value of node to delete: ");
+                scanf("%d", &key);
+                while ((c = getchar()) != '\n' && c != EOF) {}
+                deleteNodeByKey(key);
+                break;
+            case 4:
+                displayForward();
+                break;
+            case 5:
+                displayBackward();
+                break;
+            case 6:
+                printf("Exiting program.\n");
+                break;
+            default:
+                printf("Invalid choice.\n");
+        }
+    } while (choice != 6);
+
+    // Terminal pause logic
+    printf("\n\n*** Program Finished. Press ENTER to close the terminal. ***");
+    while ((c = getchar()) != '\n' && c != EOF) {}
+    getchar();
+    return 0;
+}
