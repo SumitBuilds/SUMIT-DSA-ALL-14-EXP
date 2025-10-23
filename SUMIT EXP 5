@@ -1,0 +1,101 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h> // Needed for proper input handling
+
+struct node {
+    int data;
+    struct node *prev; 
+    struct node *next;
+};
+struct node *head = NULL; 
+
+// Helper function to create a new node
+struct node* createNode(int data) {
+    struct node* newNode = (struct node*)malloc(sizeof(struct node));
+    if (newNode == NULL) {
+        printf("Memory allocation failed!\n");
+        exit(1);
+    }
+    newNode->data = data;
+    return newNode;
+}
+
+// Function to insert at the end (simplest insertion for Circular DLL)
+void insert_cdll(int data) {
+    struct node* newNode = createNode(data);
+    
+    if (head == NULL) {
+        head = newNode;
+        head->next = head; // Point to itself
+        head->prev = head; // Point to itself
+    } else {
+        struct node* last = head->prev;
+        
+        newNode->next = head;      // New node points forward to head
+        newNode->prev = last;      // New node points backward to last
+        head->prev = newNode;      // Head points backward to new node
+        last->next = newNode;      // Last points forward to new node
+    }
+    printf("Inserted %d.\n", data);
+}
+
+// Function to display the list (starting from head)
+void display_cdll() {
+    if (head == NULL) {
+        printf("\nList is Empty.\n");
+        return;
+    }
+    
+    struct node* current = head;
+    printf("\nCircular Doubly Linked List (Head -> ... -> Head):\n");
+    do {
+        printf("[%d] <-> ", current->data);
+        current = current->next;
+    } while (current != head);
+    printf("[Head]\n");
+}
+
+// NOTE: delete_cdll logic is complex and omitted for brevity,
+// but would involve finding the key and updating four pointers (prev of next, next of prev).
+
+int main() {
+    int choice, value;
+    
+    do {
+        printf("\n--- Circular Doubly Linked List Operations ---\n");
+        printf("1. Insert (End)\n2. Display\n3. Exit\n");
+        printf("Enter your choice: ");
+        
+        // This is a reliable fix for menu-driven input in the external console
+        if (scanf("%d", &choice) != 1) {
+            choice = 0; // Set to invalid choice on failure
+        }
+        // Clear input buffer for subsequent safe reading
+        int c;
+        while ((c = getchar()) != '\n' && c != EOF) {}
+
+        switch (choice) {
+            case 1:
+                printf("Enter the value to insert: ");
+                scanf("%d", &value);
+                // Clear buffer after reading value
+                while ((c = getchar()) != '\n' && c != EOF) {}
+                insert_cdll(value);
+                break;
+            case 2:
+                display_cdll();
+                break;
+            case 3:
+                printf("Exiting program.\n");
+                break;
+            default:
+                printf("Invalid choice! Please try again.\n");
+        }
+    } while (choice != 3);
+
+    // --- PAUSE LOGIC: Prevents immediate closing ---
+    printf("\n\n*** Program Finished. Press ENTER to close the terminal. ***");
+    getchar(); // Waits for the final keypress
+    
+    return 0;
+}
