@@ -1,0 +1,182 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_VERTICES 10
+#define TRUE 1
+#define FALSE 0
+
+int adjMatrix[MAX_VERTICES][MAX_VERTICES];
+int visited[MAX_VERTICES];
+int num_vertices = 0;
+
+// --- Queue Implementation for BFS ---
+int queue[MAX_VERTICES];
+int front = -1, rear = -1;
+
+void enqueue(int vertex) {
+    if (rear == MAX_VERTICES - 1) return; // Queue full
+    if (front == -1) front = 0;
+    queue[++rear] = vertex;
+}
+
+int dequeue() {
+    if (front == -1) return -1; // Queue empty
+    int vertex = queue[front];
+    if (front == rear) { // Last element
+        front = rear = -1;
+    } else {
+        front++;
+    }
+    return vertex;
+}
+
+// --- Graph Setup Functions ---
+
+void initializeGraph() {
+    int i, j;
+    for (i = 0; i < MAX_VERTICES; i++) {
+        for (j = 0; j < MAX_VERTICES; j++) {
+            adjMatrix[i][j] = 0;
+        }
+    }
+}
+
+void resetVisited() {
+    for (int i = 0; i < num_vertices; i++) {
+        visited[i] = FALSE;
+    }
+}
+
+void readGraph() {
+    int edges, i, u, v, c;
+    
+    printf("Enter number of vertices (max %d): ", MAX_VERTICES);
+    scanf("%d", &num_vertices);
+    while ((c = getchar()) != '\n' && c != EOF) {}
+    
+    if (num_vertices <= 0 || num_vertices > MAX_VERTICES) {
+        printf("Invalid number of vertices. Setting to 5.\n");
+        num_vertices = 5;
+    }
+    
+    initializeGraph();
+    
+    printf("Enter number of directed edges: ");
+    scanf("%d", &edges);
+    while ((c = getchar()) != '\n' && c != EOF) {}
+    
+    printf("Enter edges (u v):\n");
+    for (i = 0; i < edges; i++) {
+        if (scanf("%d %d", &u, &v) != 2) {
+             printf("Invalid input for edge. Skipping.\n");
+             while ((c = getchar()) != '\n' && c != EOF) {}
+             continue;
+        }
+        if (u >= 0 && u < num_vertices && v >= 0 && v < num_vertices) {
+            adjMatrix[u][v] = 1; // Directed edge from u to v
+        } else {
+            printf("Invalid vertex in edge (%d, %d). Skipping.\n", u, v);
+        }
+        while ((c = getchar()) != '\n' && c != EOF) {}
+    }
+}
+
+// --- Traversal Algorithms ---
+
+// 1. Breadth First Search (BFS)
+void BFS(int startVertex) {
+    int i, currentVertex;
+    
+    resetVisited();
+    front = rear = -1; // Reset queue pointers
+
+    enqueue(startVertex);
+    visited[startVertex] = TRUE;
+    
+    printf("\nBFS Traversal starting from %d: ", startVertex);
+
+    while (front != -1) {
+        currentVertex = dequeue();
+        printf("%d ", currentVertex);
+
+        // Check all neighbors
+        for (i = 0; i < num_vertices; i++) {
+            // Check if edge exists and neighbor hasn't been visited
+            if (adjMatrix[currentVertex][i] == 1 && !visited[i]) {
+                visited[i] = TRUE;
+                enqueue(i);
+            }
+        }
+    }
+    printf("\n");
+}
+
+// 2. Depth First Search (DFS) - Recursive
+void DFS(int vertex) {
+    printf("%d ", vertex);
+    visited[vertex] = TRUE;
+
+    // Recur for all adjacent vertices
+    for (int i = 0; i < num_vertices; i++) {
+        if (adjMatrix[vertex][i] == 1 && !visited[i]) {
+            DFS(i);
+        }
+    }
+}
+
+
+int main() {
+    int choice, startVertex, c;
+    
+    // Initial setup if user doesn't choose option 1 immediately
+    readGraph(); 
+
+    do {
+        printf("\n--- Graph Traversal Menu (%d Vertices) ---\n", num_vertices);
+        printf("1. Re-read/Update Graph\n2. Perform BFS\n3. Perform DFS\n4. Exit\n");
+        printf("Enter choice: ");
+        
+        if (scanf("%d", &choice) != 1) choice = 0;
+        while ((c = getchar()) != '\n' && c != EOF) {}
+
+        switch (choice) {
+            case 1:
+                readGraph();
+                break;
+            case 2:
+            case 3:
+                if (num_vertices > 0) {
+                    printf("Enter starting vertex (0 to %d): ", num_vertices - 1);
+                    scanf("%d", &startVertex);
+                    while ((c = getchar()) != '\n' && c != EOF) {}
+                    
+                    if (startVertex >= 0 && startVertex < num_vertices) {
+                        if (choice == 2) {
+                            BFS(startVertex);
+                        } else {
+                            resetVisited();
+                            printf("\nDFS Traversal starting from %d: ", startVertex);
+                            DFS(startVertex);
+                            printf("\n");
+                        }
+                    } else {
+                        printf("Invalid starting vertex.\n");
+                    }
+                } else {
+                    printf("Graph not initialized. Choose option 1 first.\n");
+                }
+                break;
+            case 4:
+                printf("Exiting program.\n");
+                break;
+            default:
+                printf("Invalid choice.\n");
+        }
+    } while (choice != 4);
+
+    // Terminal pause logic
+    printf("\n\n*** Program Finished. Press ENTER to close the terminal. ***");
+    while ((c = getchar()) != '\n' && c != EOF) {}
+    getchar();
+    return 0;
+}
